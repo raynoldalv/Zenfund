@@ -18,7 +18,10 @@
 
         body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; transition: background 0.3s; }
         
-        /* Kartu Saldo dengan Transisi Warna */
+        /* Override Bootstrap text-primary agar ikut variabel dinamis kita */
+        .text-primary { color: var(--primary) !important; }
+
+        /* Kartu Saldo */
         .card-saldo { 
             background: linear-gradient(135deg, var(--primary), var(--primary-dark)); 
             color: white; 
@@ -30,7 +33,7 @@
             overflow: hidden;
         }
         
-        /* Dropdown Filter di Header */
+        /* Header Elements */
         .header-select {
             background: rgba(255,255,255,0.2);
             border: 1px solid rgba(255,255,255,0.3);
@@ -41,19 +44,20 @@
             cursor: pointer;
         }
         .header-select option { color: #333; }
+        .header-btn-icon { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 8px; padding: 2px 8px; cursor: pointer; }
 
-        /* Progress Bar Budget */
+        /* Budget Bar */
         .budget-bar-bg { background: rgba(255,255,255,0.2); height: 6px; border-radius: 3px; margin-top: 10px; width: 100%; }
         .budget-bar-fill { background: white; height: 100%; border-radius: 3px; width: 0%; transition: width 0.5s; }
 
-        /* Komponen Lain */
+        /* Transaksi & UI Lain */
         .transaksi-item { 
             background: white; border-radius: 12px; padding: 12px 15px; margin-bottom: 10px; 
             border-left: 5px solid var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.02); 
         }
         .ai-bubble { background: #f8f9fa; border-left: 4px solid var(--primary); padding: 15px; border-radius: 8px; font-size: 0.9rem; margin-top: 15px; }
 
-        /* Floating Action Button */
+        /* FAB */
         .fab-container { position: fixed; bottom: 100px; right: 25px; z-index: 1050; }
         .btn-fab {
             width: 60px; height: 60px; border-radius: 50%;
@@ -64,7 +68,7 @@
         }
         .btn-fab:active { transform: scale(0.90); }
 
-        /* Footer Nav */
+        /* Footer */
         .bottom-nav { 
             position: fixed; bottom: 0; width: 100%; background: rgba(255, 255, 255, 0.95); 
             backdrop-filter: blur(10px); padding: 15px 40px; 
@@ -74,7 +78,7 @@
         .nav-btn i { font-size: 1.4rem; margin-bottom: 4px; }
         .nav-btn.active-tab { color: var(--primary); font-weight: bold; }
 
-        /* KALENDER STYLE */
+        /* Kalender */
         .calendar-wrapper { border: 1px solid #ddd; border-radius: 10px; padding: 10px; background: white; margin-top: 15px; }
         .cal-header { text-align: center; font-weight: bold; margin-bottom: 10px; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; font-size: 0.8rem; }
@@ -85,8 +89,32 @@
 
         /* Helpers */
         .btn-primary { background-color: var(--primary); border-color: var(--primary); }
-        .text-primary { color: var(--primary) !important; }
         #camera-preview { width: 100%; max-height: 200px; object-fit: cover; border-radius: 10px; display: none; margin-bottom: 10px; }
+
+        /* HALAMAN ABOUT (OVERLAY) */
+        #about-page {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 2000; overflow-y: auto;
+            display: none; animation: fadeIn 0.3s;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .hero-section {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white; padding: 60px 20px 40px 20px; border-radius: 0 0 30px 30px; margin-bottom: 30px;
+        }
+        .feature-card {
+            background: white; border: 1px solid #eee; border-radius: 15px; padding: 20px;
+            margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+        }
+        .feature-icon {
+            width: 50px; height: 50px; background: var(--bg-soft); color: var(--primary);
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; margin-bottom: 15px;
+        }
+        .faq-item { border: none; margin-bottom: 10px; border-radius: 10px; overflow: hidden; background: #f8f9fa; }
+        .accordion-button:not(.collapsed) { background-color: var(--bg-soft); color: var(--primary); box-shadow: none; }
+        .accordion-button:focus { box-shadow: none; }
     </style>
 </head>
 <body class="pb-5">
@@ -99,9 +127,14 @@
                     <option value="bulanan">Bulan Ini</option>
                     <option value="tahunan">Tahun Ini</option>
                 </select>
-                <button class="header-select" onclick="editBudget()">
-                    <i class="fas fa-cog me-1"></i> Atur Plafon
-                </button>
+                <div>
+                    <button class="header-btn-icon me-1" onclick="toggleAbout(true)" title="Tentang Aplikasi">
+                        <i class="fas fa-info-circle"></i>
+                    </button>
+                    <button class="header-btn-icon" onclick="editBudget()" title="Atur Plafon">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
             </div>
             
             <h1 id="total-display" class="fw-bold mb-0">Rp 0</h1>
@@ -119,9 +152,7 @@
         </div>
 
         <h6 class="text-muted fw-bold mb-3 ps-1" style="font-size: 0.8rem; letter-spacing: 1px;">RIWAYAT TERBARU</h6>
-        <div id="list-transaksi" class="pb-5">
-            </div>
-        
+        <div id="list-transaksi" class="pb-5"></div>
         <div style="height: 100px;"></div>
     </div>
 
@@ -129,6 +160,108 @@
         <button class="btn-fab" onclick="bukaModalInput()">
             <i class="fas fa-plus"></i>
         </button>
+    </div>
+
+    <div id="about-page">
+        <button onclick="toggleAbout(false)" style="position:fixed; top:20px; right:20px; z-index:2001; background:rgba(255,255,255,0.2); border:none; color:white; width:40px; height:40px; border-radius:50%; font-size:1.2rem; backdrop-filter:blur(5px);">
+            <i class="fas fa-times"></i>
+        </button>
+
+        <div class="hero-section text-center">
+            <h2 class="fw-bold mb-2">DompetKilat Smart</h2>
+            <p class="opacity-75 small text-uppercase letter-spacing-2">Sistem Manajemen Keuangan Personal<br>Berbasis Frictionless Experience</p>
+        </div>
+
+        <div class="container pb-5">
+            <div class="mb-5">
+                <h5 class="fw-bold mb-3 text-primary"><i class="fas fa-lightbulb me-2"></i>Latar Belakang</h5>
+                <p class="text-muted small" style="line-height: 1.6;">
+                    Dalam era ketidakpastian ekonomi, literasi keuangan adalah fondasi vital. Namun, banyak individu gagal mempertahankan konsistensi pencatatan (<i>tracking habit</i>) karena hambatan psikologis dan teknis. Aplikasi konvensional seringkali terlalu kompleks dan lambat. Hal ini menyebabkan "kebocoran finansial" yang tidak terdeteksi.
+                </p>
+            </div>
+
+            <div class="mb-5">
+                <h5 class="fw-bold mb-3 text-primary"><i class="fas fa-layer-group me-2"></i>Solusi Kami</h5>
+                <p class="text-muted small mb-4">DompetKilat Smart hadir untuk mereduksi hambatan pencatatan hingga titik nol (<i>zero-friction input</i>).</p>
+
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-camera"></i></div>
+                    <h6 class="fw-bold">Input Kilat & OCR</h6>
+                    <p class="small text-muted mb-0">Integrasi kamera pintar memangkas waktu input. Pindai struk, dan sistem akan membaca nominal secara otomatis.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-palette"></i></div>
+                    <h6 class="fw-bold">Tema Adaptif (Alarm Visual)</h6>
+                    <p class="small text-muted mb-0">Antarmuka berubah warna sesuai kesehatan dompet Anda: 
+                        <span class="fw-bold" style="color: #198754;">Hijau</span> (Hemat), 
+                        <span class="fw-bold" style="color: #0d6efd;">Biru</span> (Aman), 
+                        <span class="fw-bold" style="color: #ffc107;">Kuning</span> (Waspada), hingga 
+                        <span class="fw-bold" style="color: #dc3545;">Merah</span> (Bahaya).
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-brain"></i></div>
+                    <h6 class="fw-bold">Perencanaan Cerdas</h6>
+                    <p class="small text-muted mb-0">Visualisasikan target pembelian dengan kalender prediktif. Kami menghitung kapan impian Anda terwujud berdasarkan kemampuan menabung harian.</p>
+                </div>
+            </div>
+
+            <div class="mb-5">
+                <h5 class="fw-bold mb-3 text-primary"><i class="fas fa-question-circle me-2"></i>FAQ</h5>
+                <div class="accordion accordion-flush" id="faqAccordion">
+                    <div class="accordion-item faq-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                <strong>Mengapa aplikasi ini disebut "Frictionless"?</strong>
+                            </button>
+                        </h2>
+                        <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body small text-muted">
+                                Kami menghilangkan hambatan input data. Aplikasi ini 100% offline (tanpa loading server), dan dirancang dengan langkah input seminimal mungkin agar Anda tidak malas mencatat.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item faq-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                <strong>Apa arti perubahan warna pada aplikasi?</strong>
+                            </button>
+                        </h2>
+                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body small text-muted">
+                                Itu adalah "Alarm Visual". Sistem memantau persentase pengeluaran terhadap Budget Limit Anda. Jika berubah Merah, artinya Anda sudah <i>over-budget</i> dan harus segera mengerem pengeluaran.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item faq-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                <strong>Apakah data saya aman?</strong>
+                            </button>
+                        </h2>
+                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body small text-muted">
+                                Sangat aman. DompetKilat Smart menggunakan arsitektur <i>Single File Application</i> yang berjalan sepenuhnya di perangkat Anda (Local Storage). Data tidak pernah dikirim ke server cloud mana pun.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center py-4 bg-light rounded-4">
+                <h6 class="fw-bold mb-2">Punya Pertanyaan Lebih Lanjut?</h6>
+                <p class="small text-muted mb-3">Tim kami siap membantu kebutuhan finansial digital Anda.</p>
+                <a href="mailto:raynoldkeefa@gmail.com?subject=Tanya%20DompetKilat%20Smart" class="btn btn-outline-primary rounded-pill px-4">
+                    <i class="fas fa-envelope me-2"></i> Hubungi via Email
+                </a>
+            </div>
+            
+            <div class="text-center mt-4 pb-4">
+                <small class="text-muted opacity-50">&copy; 2026 DompetKilat Smart. All Rights Reserved.</small>
+            </div>
+        </div>
     </div>
 
     <div class="modal fade" id="modalInput" tabindex="-1">
@@ -208,13 +341,10 @@
                                 <small class="text-muted">Estimasi Tercapai</small>
                                 <h4 class="fw-bold text-primary" id="res-tanggal-besar">-</h4>
                             </div>
-
                             <div class="calendar-wrapper">
                                 <div class="cal-header" id="cal-month-name">JANUARI 2026</div>
-                                <div class="cal-grid" id="cal-days-grid">
-                                    </div>
+                                <div class="cal-grid" id="cal-days-grid"></div>
                             </div>
-                            
                             <div class="ai-bubble">
                                 <strong><i class="fas fa-robot me-1"></i> Analisis:</strong><br>
                                 <span id="ai-text">...</span>
@@ -253,7 +383,7 @@
     <script src='https://unpkg.com/tesseract.js@v2.1.0/dist/tesseract.min.js'></script>
     
     <script>
-        // --- KONFIGURASI TEMA ---
+        // --- LOGIKA UTAMA ---
         const THEMES = {
             green:  { primary: '#198754', dark: '#146c43', soft: '#d1e7dd', text: 'Hemat & Sehat! 🌱' },
             blue:   { primary: '#0d6efd', dark: '#0a58ca', soft: '#cfe2ff', text: 'Kondisi Aman 💧' },
@@ -262,12 +392,10 @@
         };
 
         let dataTransaksi = JSON.parse(localStorage.getItem('dompetkilat_data')) || [];
-        let budgetLimit = parseFloat(localStorage.getItem('dompetkilat_budget')) || 1000000; // Default 1 Juta
+        let budgetLimit = parseFloat(localStorage.getItem('dompetkilat_budget')) || 1000000;
         
-        // Init
         updateUI();
 
-        // 1. INPUT TRANSAKSI
         document.getElementById('form-transaksi').addEventListener('submit', function(e) {
             e.preventDefault();
             const nominal = parseInt(document.getElementById('inputNominal').value);
@@ -281,14 +409,12 @@
             }
         });
 
-        // 2. LOGIKA UTAMA (UI + THEME + FILTER)
         function updateUI() {
             const filterType = document.getElementById('timeFilter').value;
             const listEl = document.getElementById('list-transaksi');
             const totalEl = document.getElementById('total-display');
             const now = new Date();
             
-            // Filter Data Berdasarkan Waktu
             let filteredData = dataTransaksi.filter(t => {
                 const tDate = new Date(t.tanggal);
                 if (filterType === 'mingguan') {
@@ -296,16 +422,14 @@
                     return tDate >= oneWeekAgo;
                 } else if (filterType === 'bulanan') {
                     return tDate.getMonth() === now.getMonth() && tDate.getFullYear() === now.getFullYear();
-                } else { // tahunan
+                } else {
                     return tDate.getFullYear() === now.getFullYear();
                 }
             });
 
-            // Hitung Total
             const total = filteredData.reduce((sum, t) => sum + t.nominal, 0);
             totalEl.innerText = 'Rp ' + total.toLocaleString('id-ID');
 
-            // Render List
             listEl.innerHTML = '';
             filteredData.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal)).slice(0, 10).forEach(t => {
                 const d = new Date(t.tanggal);
@@ -317,7 +441,6 @@
             });
             if (filteredData.length === 0) listEl.innerHTML = '<div class="text-center text-muted py-5">Belum ada data periode ini</div>';
 
-            // UPDATE TEMA & BUDGET BAR
             updateTheme(total);
         }
 
@@ -331,33 +454,23 @@
             document.getElementById('persen-plafon').innerText = `${percentage.toFixed(0)}%`;
             bar.style.width = `${Math.min(percentage, 100)}%`;
 
-            let theme = THEMES.blue; // Default
-
+            let theme = THEMES.blue;
             if (percentage < 50) theme = THEMES.green;
             else if (percentage < 75) theme = THEMES.blue;
             else if (percentage < 100) theme = THEMES.yellow;
             else theme = THEMES.red;
 
-            // Apply Variables
             root.style.setProperty('--primary', theme.primary);
             root.style.setProperty('--primary-dark', theme.dark);
             root.style.setProperty('--bg-soft', theme.soft);
             
-            // Text Color Adjustment for Warning/Danger
             if(theme === THEMES.yellow) {
-                 document.querySelector('.card-saldo').style.color = '#333'; // Text hitam di kuning
-                 document.querySelectorAll('.header-select').forEach(el => {
-                     el.style.borderColor = "rgba(0,0,0,0.2)"; 
-                     el.style.color = "#333";
-                 });
+                 document.querySelector('.card-saldo').style.color = '#333';
+                 document.querySelectorAll('.header-select, .header-btn-icon').forEach(el => { el.style.borderColor = "rgba(0,0,0,0.2)"; el.style.color = "#333"; });
             } else {
                  document.querySelector('.card-saldo').style.color = 'white';
-                 document.querySelectorAll('.header-select').forEach(el => {
-                     el.style.borderColor = "rgba(255,255,255,0.3)";
-                     el.style.color = "white";
-                 });
+                 document.querySelectorAll('.header-select, .header-btn-icon').forEach(el => { el.style.borderColor = "rgba(255,255,255,0.3)"; el.style.color = "white"; });
             }
-
             statusText.innerText = theme.text;
         }
 
@@ -370,26 +483,23 @@
             }
         }
 
-        // 3. FITUR KALENDER & RENCANA
+        // --- Logic Rencana & About ---
+        function toggleAbout(show) { document.getElementById('about-page').style.display = show ? 'block' : 'none'; }
+        function bukaModalInput() { new bootstrap.Modal(document.getElementById('modalInput')).show(); setTimeout(() => document.getElementById('inputNominal').focus(), 500); }
+        function resetData() { if(confirm("Hapus semua data?")) { localStorage.clear(); location.reload(); } }
+
         function hitungRencana() {
             const harga = parseFloat(document.getElementById('hargaBarang').value);
             const sisihan = parseFloat(document.getElementById('uangSishan').value);
             const periode = parseInt(document.getElementById('periodeSisihan').value);
-            
             if (!harga || !sisihan) { alert("Lengkapi data!"); return; }
-
             const perHari = sisihan / periode;
             const hariButuh = Math.ceil(harga / perHari);
             const targetDate = new Date();
             targetDate.setDate(targetDate.getDate() + hariButuh);
-
             document.getElementById('hasil-analisis').style.display = 'block';
             document.getElementById('res-tanggal-besar').innerText = targetDate.toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
-            
-            // Generate Kalender
             renderCalendar(targetDate);
-
-            // AI Text
             let text = "";
             if (hariButuh < 30) text = "Sangat mungkin! Dalam sebulan barang ini bisa terbeli.";
             else if (hariButuh < 90) text = "Butuh konsistensi sekitar 1-3 bulan.";
@@ -400,44 +510,19 @@
         function renderCalendar(targetDate) {
             const container = document.getElementById('cal-days-grid');
             const monthLabel = document.getElementById('cal-month-name');
-            container.innerHTML = ""; // Clear
-            
-            // Header Hari
-            const daysName = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
-            daysName.forEach(d => container.innerHTML += `<div class="cal-day-name">${d}</div>`);
-
+            container.innerHTML = "";
+            ['Min','Sen','Sel','Rab','Kam','Jum','Sab'].forEach(d => container.innerHTML += `<div class="cal-day-name">${d}</div>`);
             const year = targetDate.getFullYear();
             const month = targetDate.getMonth();
-            
             monthLabel.innerText = targetDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }).toUpperCase();
-
             const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-            // Padding kosong di awal bulan
-            for (let i = 0; i < firstDay; i++) {
-                container.innerHTML += `<div class="cal-day empty"></div>`;
-            }
-
-            // Isi Tanggal
+            for (let i = 0; i < firstDay; i++) container.innerHTML += `<div class="cal-day empty"></div>`;
             for (let day = 1; day <= daysInMonth; day++) {
                 let className = "cal-day";
-                // Jika ini tanggal target
-                if (day === targetDate.getDate()) {
-                    className += " target-date";
-                }
+                if (day === targetDate.getDate()) className += " target-date";
                 container.innerHTML += `<div class="${className}">${day}</div>`;
             }
-        }
-
-        // 4. UTILITIES
-        function bukaModalInput() {
-            new bootstrap.Modal(document.getElementById('modalInput')).show();
-            setTimeout(() => document.getElementById('inputNominal').focus(), 500);
-        }
-
-        function resetData() {
-            if(confirm("Hapus semua data?")) { localStorage.clear(); location.reload(); }
         }
 
         document.getElementById('cameraInput').addEventListener('change', function(e) {
@@ -461,18 +546,16 @@
             }
         });
 
-        // Chart render (basic)
         let myChart;
         function renderChart(){
              const ctx = document.getElementById('chartMingguan');
              if(myChart) myChart.destroy();
-             // Simple data dummy logic for chart just to show it works
              myChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: ['Terpakai', 'Sisa Budget'],
                     datasets: [{
-                        data: [1, 1], // Placeholder, logic can be expanded
+                        data: [1, 1], 
                         backgroundColor: [getComputedStyle(document.body).getPropertyValue('--primary'), '#eee']
                     }]
                 }
